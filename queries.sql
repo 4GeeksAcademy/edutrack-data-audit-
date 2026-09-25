@@ -1,99 +1,132 @@
--- 1. Inscripciones en Intro to Python
+﻿-- EduTrack - Auditoría de Datos con Tablas Relacionadas
+
+-- 1. Listar todas las inscripciones con estudiante, curso y porcentaje de completado
+
 SELECT
-    student_name,
-    student_email,
-    completion_percentage
-FROM enrollments
-WHERE course_title = 'Intro to Python';
+    e.id AS enrollment_id,
+    s.name AS student_name,
+    c.title AS course_title,
+    e.enrollment_date,
+    e.completion_percentage,
+    e.passed
+FROM enrollments e
+INNER JOIN students s
+    ON e.student_id = s.id
+INNER JOIN courses c
+    ON e.course_id = c.id
+ORDER BY e.id;
 
--- 2. Posibles abandonos
-SELECT *
-FROM enrollments
-WHERE completion_percentage < 10;
 
--- 3. Inscripciones sin instructor asignado
-SELECT *
-FROM enrollments
-WHERE instructor IS NULL;
+-- 2. Estudiantes que aprobaron al menos un curso
 
--- 4. Top 5 estudiantes con mayor progreso que todavía no aprobaron
-SELECT *
-FROM enrollments
-WHERE passed = false
-ORDER BY completion_percentage DESC
-LIMIT 5;
-
--- 5. Inscripciones creadas en el último año
-SELECT *
-FROM enrollments
-WHERE enrollment_date >= CURRENT_DATE - INTERVAL '1 year'
-ORDER BY enrollment_date DESC;
-
--- 6. Añadir la inscripción faltante
-INSERT INTO enrollments (
-    student_id,
-    student_name,
-    student_email,
-    course_id,
-    course_title,
-    category,
-    enrollment_date,
-    completion_percentage,
-    passed,
-    monthly_fee_paid,
-    instructor
-)
-VALUES (
-    3,
-    'Lucia Fernandes',
-    'lucia.fernandes@student.edutrack.com',
-    5,
-    'Advanced Python',
-    'Programming',
-    '2025-04-01',
-    0,
-    false,
-    69.99,
-    'Carlos Vega'
-);
-
--- 7. Asignar instructor pendiente a las inscripciones sin instructor
-UPDATE enrollments
-SET instructor = 'Pending assignment'
-WHERE instructor IS NULL;
-
--- 8. Eliminar inscripciones de cuentas de prueba
-DELETE FROM enrollments
-WHERE student_email LIKE '%@test.com';
-
--- 9. Número de inscripciones por categoría
 SELECT
-    category,
-    COUNT(*) AS total_enrollments
-FROM enrollments
-GROUP BY category
-ORDER BY category;
+    s.name AS student_name,
+    s.email AS student_email,
+    c.title AS course_title
+FROM enrollments e
+INNER JOIN students s
+    ON e.student_id = s.id
+INNER JOIN courses c
+    ON e.course_id = c.id
+WHERE e.passed = true
+ORDER BY s.name, c.title;
 
--- 10. Promedio de completado por curso
-SELECT
-    course_title,
-    AVG(completion_percentage) AS average_completion
-FROM enrollments
-GROUP BY course_title
-ORDER BY average_completion ASC;
 
--- 11. Cursos con más de 3 inscripciones
-SELECT
-    course_title,
-    COUNT(*) AS total_enrollments
-FROM enrollments
-GROUP BY course_title
-HAVING COUNT(*) > 3;
+-- 3. Porcentaje de completado medio por instructor
 
--- 12. Ingresos totales por categoría
 SELECT
-    category,
-    SUM(monthly_fee_paid) AS total_revenue
-FROM enrollments
-GROUP BY category
+    c.instructor,
+    AVG(e.completion_percentage) AS average_completion
+FROM enrollments e
+INNER JOIN courses c
+    ON e.course_id = c.id
+GROUP BY c.instructor
+ORDER BY average_completion DESC;
+
+
+-- 4. Estudiantes que no tienen ninguna inscripción
+
+SELECT
+    s.id,
+    s.name,
+    s.email
+FROM students s
+LEFT JOIN enrollments e
+    ON s.id = e.student_id
+WHERE e.id IS NULL;
+
+
+-- 5. Cursos que no tienen ninguna inscripción
+
+SELECT
+    c.id,
+    c.title,
+    c.category
+FROM courses c
+LEFT JOIN enrollments e
+    ON c.id = e.course_id
+WHERE e.id IS NULL;
+
+
+-- 6. Estudiantes inscritos en más de un curso
+
+SELECT
+    s.id,
+    s.name,
+    COUNT(e.id) AS course_count
+FROM students s
+INNER JOIN enrollments e
+    ON s.id = e.student_id
+GROUP BY
+    s.id,
+    s.name
+HAVING COUNT(e.id) > 1
+ORDER BY
+    course_count DESC,
+    s.name;
+
+
+-- 7. Ingresos totales por categoría usando el precio actual de los cursos
+
+SELECT
+    c.category,
+    SUM(c.monthly_fee) AS total_revenue
+FROM enrollments e
+INNER JOIN courses c
+    ON e.course_id = c.id
+GROUP BY c.category
 ORDER BY total_revenue DESC;
+
+
+-- 8. Instructores y número de estudiantes inscritos actualmente en sus cursos
+
+SELECT
+    c.instructor,
+    COUNT(e.id) AS total_students
+FROM courses c
+LEFT JOIN enrollments e
+    ON c.id = e.course_id
+GROUP BY c.instructor
+ORDER BY total_students DESC;
+
+
+-- 9. Inscripciones con student_id huérfano
+
+SELECT
+    e.id AS enrollment_id,
+    e.student_id
+FROM enrollments e
+LEFT JOIN students s
+    ON e.student_id = s.id
+WHERE s.id IS NULL;
+
+
+-- 10. Inscripciones con course_id huérfano
+
+SELECT
+    e.id AS enrollment_id,
+    e.course_id
+FROM enrollments e
+LEFT JOIN courses c
+    ON e.course_id = c.id
+WHERE c.id IS NULL;
