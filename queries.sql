@@ -35,12 +35,12 @@ ORDER BY s.name, c.title;
 -- 3. Porcentaje de completado medio por instructor
 
 SELECT
-    c.instructor,
+    c.instructor_name,
     AVG(e.completion_percentage) AS average_completion
 FROM enrollments e
 INNER JOIN courses c
     ON e.course_id = c.id
-GROUP BY c.instructor
+GROUP BY c.instructor_name
 ORDER BY average_completion DESC;
 
 
