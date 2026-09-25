@@ -98,16 +98,19 @@ GROUP BY c.category
 ORDER BY total_revenue DESC;
 
 
--- 8. Instructores y número de estudiantes inscritos actualmente en sus cursos
+-- 8. Cantidad de estudiantes inscritos por instructor
 
 SELECT
-    c.instructor,
-    COUNT(e.id) AS total_students
+    c.instructor_name,
+    COUNT(DISTINCT e.student_id) AS enrolled_students
 FROM courses c
 LEFT JOIN enrollments e
     ON c.id = e.course_id
-GROUP BY c.instructor
-ORDER BY total_students DESC;
+GROUP BY
+    c.instructor_name
+ORDER BY
+    enrolled_students DESC,
+    c.instructor_name;
 
 
 -- 9. Inscripciones con student_id huérfano

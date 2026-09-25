@@ -103,16 +103,18 @@ La categoría Programming presenta el mayor ingreso total, con 409.93.
 Se relacionaron las tablas `courses` y `enrollments` para obtener cada instructor junto con el número de estudiantes inscritos actualmente en sus cursos.
 
 La consulta utiliza `LEFT JOIN`, permitiendo considerar los cursos aunque no tengan inscripciones.
-Resultado: 4 instructores.
+Resultado: 4 valores registrados en `instructor_name`.
 
-| instructor_name | total_students |
+| instructor_name | enrolled_students |
 | --- | ---: |
-| Marta López | 7 |
-| Carlos Vega | 5 |
-| Pending assignment | 2 |
+| Marta López | 6 |
+| Carlos Vega | 3 |
 | Lucia Prades | 2 |
+| Pending assignment | 2 |
 
-Marta López es la instructora con mayor cantidad de inscripciones en sus cursos, con un total de 7.
+Marta López es la instructora con mayor cantidad de estudiantes distintos inscritos en sus cursos, con un total de 6.
+
+El valor `Pending assignment` corresponde a cursos que todavía no tienen un instructor asignado.
 
 ## 9. Integridad de datos: student_id
 
